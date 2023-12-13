@@ -1,11 +1,15 @@
-import {Text, View} from 'react-native';
 import React from 'react';
+import TabNavigation from './src/Navigation/TabNavigation';
+import {NavigationContainer} from '@react-navigation/native';
+import {PaperProvider} from 'react-native-paper';
 
 const App = () => {
   return (
-    <View>
-      <Text>App</Text>
-    </View>
+    <PaperProvider>
+      <NavigationContainer>
+        <TabNavigation />
+      </NavigationContainer>
+    </PaperProvider>
   );
 };
 
