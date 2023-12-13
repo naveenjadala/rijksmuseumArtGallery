@@ -1,0 +1,16 @@
+current directory: /Users/bhavyalabishetty/Documents/untitledfolder/rijksmuseumArtGallery/vendor/bundle/ruby/3.2.0/gems/json-2.7.1/ext/json
+/Users/bhavyalabishetty/.rvm/rubies/ruby-3.2.0/bin/ruby -I /Users/bhavyalabishetty/.rvm/rubies/ruby-3.2.0/lib/ruby/3.2.0 extconf.rb
+creating Makefile
+
+current directory: /Users/bhavyalabishetty/Documents/untitledfolder/rijksmuseumArtGallery/vendor/bundle/ruby/3.2.0/gems/json-2.7.1/ext/json
+make DESTDIR\= sitearchdir\=./.gem.20231213-5278-6lohpa sitelibdir\=./.gem.20231213-5278-6lohpa clean
+
+current directory: /Users/bhavyalabishetty/Documents/untitledfolder/rijksmuseumArtGallery/vendor/bundle/ruby/3.2.0/gems/json-2.7.1/ext/json
+make DESTDIR\= sitearchdir\=./.gem.20231213-5278-6lohpa sitelibdir\=./.gem.20231213-5278-6lohpa
+make: Nothing to be done for `all'.
+
+current directory: /Users/bhavyalabishetty/Documents/untitledfolder/rijksmuseumArtGallery/vendor/bundle/ruby/3.2.0/gems/json-2.7.1/ext/json
+make DESTDIR\= sitearchdir\=./.gem.20231213-5278-6lohpa sitelibdir\=./.gem.20231213-5278-6lohpa install
+
+current directory: /Users/bhavyalabishetty/Documents/untitledfolder/rijksmuseumArtGallery/vendor/bundle/ruby/3.2.0/gems/json-2.7.1/ext/json
+make DESTDIR\= sitearchdir\=./.gem.20231213-5278-6lohpa sitelibdir\=./.gem.20231213-5278-6lohpa clean
