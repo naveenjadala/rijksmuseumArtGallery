@@ -19,11 +19,7 @@ const setupDatabase = () => {
         'CREATE TABLE IF NOT EXISTS favorites (id INTEGER PRIMARY KEY AUTOINCREMENT, detailKey TEXT, artData TEXT)',
         [],
         (_, results) => {
-          if (results.rowsAffected > 0) {
-            console.log('Database setup successful');
-          } else {
-            console.log('Database setup failed');
-          }
+          console.log('Database setup successful');
         },
         (_, error) => {
           console.error('Error during database setup:', error);

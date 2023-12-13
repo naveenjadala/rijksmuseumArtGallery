@@ -5,7 +5,7 @@ import {useNavigation} from '@react-navigation/native';
 import FlatListLoader from '../../components/Loaders/FlatListLoader';
 import useApi from '../../Hooks/useGetApi';
 import endpoints from '../../Services/endpoints';
-import {storeArtData} from '../../DataBase/storeData';
+import {storeArtData} from '../../DataBase/storeArtData';
 import {setupDatabase} from '../../DataBase/db';
 import {retrieveArtIds} from '../../DataBase/retrieveData';
 
@@ -21,7 +21,6 @@ const HomeScreen = () => {
   }, []);
 
   const updatedList = result => {
-    console.log(result);
     const updatedArr = result.map(item => ({
       ...item,
       likeFlag: likedIds.includes(item?.objectNumber),
@@ -48,7 +47,6 @@ const HomeScreen = () => {
     retrieveArtIds(val => {
       setLikedIds(val);
     });
-    console.log(loading);
     fetchDataFromApi();
   }, [page]);
 

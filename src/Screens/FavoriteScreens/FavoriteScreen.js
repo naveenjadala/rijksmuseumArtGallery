@@ -4,7 +4,7 @@ import {retrieveArtData} from '../../DataBase/retrieveData';
 import ArtCard from '../../components/Card/ArtCard';
 import {useFocusEffect} from '@react-navigation/native';
 import {useNavigation} from '@react-navigation/native';
-import {storeArtData} from '../../DataBase/storeData';
+import {storeArtData} from '../../DataBase/storeArtData';
 
 const FavoriteScreen = () => {
   const navigation = useNavigation();
