@@ -2,15 +2,11 @@ import {Button, Modal, StyleSheet, Text, View} from 'react-native';
 import React from 'react';
 import {RadioButton} from 'react-native-paper';
 import {useDispatch} from 'react-redux';
-import { setFilter } from '../../Redux/slice/FilterSlice';
+import {setFilter} from '../../Redux/slice/FilterSlice';
+import {Makers} from '../../assets/Constants';
 
 const FilterModal = ({isModalVisible, toggleModal}) => {
   const dispatch = useDispatch();
-  const options = [
-    'Jan Emens Mennicken',
-    'Bartholomeus van der Helst',
-    'anonymous',
-  ];
   const [maker, setMakerValue] = React.useState('');
   return (
     <View>
@@ -26,7 +22,7 @@ const FilterModal = ({isModalVisible, toggleModal}) => {
             <RadioButton.Group
               onValueChange={newValue => setMakerValue(newValue)}
               value={maker}>
-              {options.map((option, index) => (
+              {Makers.map((option, index) => (
                 <View
                   key={index}
                   style={{flexDirection: 'row', alignItems: 'center'}}>

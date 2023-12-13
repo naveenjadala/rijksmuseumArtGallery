@@ -1,4 +1,5 @@
 import {
+  Alert,
   FlatList,
   Image,
   Platform,
@@ -37,17 +38,21 @@ const FilterScreen = () => {
 
   const onChangeSearch = query => setSearchQuery(query);
 
+  const updateList = result => {
+    const updatedArr = result.map(item => ({
+      ...item,
+      likeFlag: likedIds.includes(item?.objectNumber),
+    }));
+    return updatedArr;
+  };
+
   const fetchDataFromApi = async from => {
     try {
       const result = await getAllCollections({p: page, q: searchQuery});
       setLoading(false);
-      const updatedArr = result.map(item => ({
-        ...item,
-        likeFlag: likedIds.includes(item?.objectNumber),
-      }));
-      setData(prevVal => [...prevVal, ...updatedArr]);
+      setData(prevVal => [...prevVal, ...updateList(result)]);
     } catch (error) {
-      setError(error.message);
+      Alert.alert('Something went wrong');
     }
   };
 
@@ -55,13 +60,10 @@ const FilterScreen = () => {
     try {
       const result = await getAllCollections({p: 0, q: searchQuery, ...params});
       setLoading(false);
-      const updatedArr = result.map(item => ({
-        ...item,
-        likeFlag: likedIds.includes(item?.objectNumber),
-      }));
-      setData(updatedArr);
+      setData(updateList(result));
+      // eslint-disable-next-line no-catch-shadow
     } catch (error) {
-      setError(error.message);
+      Alert.alert('Something went wrong');
     }
   };
 
@@ -78,9 +80,9 @@ const FilterScreen = () => {
   }, [selectedData]);
 
   useEffect(() => {
-    // retrieveArtIds(val => {
-    //   setLikedIds(val);
-    // });
+    retrieveArtIds(val => {
+      setLikedIds(val);
+    });
     fetchDataFromApi('page');
   }, [page]);
 
@@ -111,24 +113,24 @@ const FilterScreen = () => {
   return (
     <SafeAreaView style={{flex: 1}}>
       <>
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+        <View style={{...styles.container}}>
           <Searchbar
             placeholder="Search"
             onChangeText={onChangeSearch}
             value={searchQuery}
             onTouchCancel={() => setPage(0)}
             onClearIconPress={() => setPage(0)}
-            style={{width: '80%', margin: 20, backgroundColor: 'white'}}
+            style={{...styles.searchBarSty}}
           />
           <TouchableOpacity onPress={() => toggleModal()}>
             {Platform.OS === 'ios' ? (
-              <Image source={FilterIcon} style={{height: 20, width: 20}} />
+              <Image source={FilterIcon} style={{...styles.img}} />
             ) : (
               <Icon name="filter" size={32} color="#000" />
             )}
           </TouchableOpacity>
         </View>
-        <View style={{margin: 15, height: '85%'}}>
+        <View style={{...styles.listContainer}}>
           <FlatList
             data={data}
             numColumns={2}
@@ -158,4 +160,22 @@ const FilterScreen = () => {
 
 export default FilterScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  listContainer: {
+    margin: 15,
+    height: '85%',
+  },
+  searchBarSty: {
+    width: '80%',
+    margin: 20,
+    backgroundColor: 'white',
+  },
+  img: {
+    height: 20,
+    width: 20,
+  },
+});

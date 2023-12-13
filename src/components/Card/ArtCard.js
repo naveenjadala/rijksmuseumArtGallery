@@ -5,6 +5,7 @@ import {
   Text,
   TouchableOpacity,
   Platform,
+  View
 } from 'react-native';
 import React, {useState} from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -19,7 +20,11 @@ const ArtCard = ({item, onClick, favorite}) => {
   };
   return (
     <TouchableOpacity onPress={onClick} style={{...styles.container}}>
-      {loading && <ActivityIndicator animating={loading} size="large" />}
+      {loading && (
+        <View style={{...styles.imgSty}}>
+          <ActivityIndicator animating={loading} size="large" />
+        </View>
+      )}
       {item?.webImage?.url ? (
         <Image
           source={{uri: item?.webImage?.url}}
