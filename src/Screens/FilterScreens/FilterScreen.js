@@ -1,5 +1,7 @@
 import {
   FlatList,
+  Image,
+  Platform,
   SafeAreaView,
   StyleSheet,
   TouchableOpacity,
@@ -15,7 +17,8 @@ import {useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
 import {storeArtData} from '../../DataBase/storeArtData';
 import {retrieveArtIds} from '../../DataBase/retrieveData';
-import { getAllCollections } from '../../Services/services';
+import {getAllCollections} from '../../Services/services';
+import FilterIcon from '../../assets/Images/filter.png';
 
 const FilterScreen = () => {
   const navigation = useNavigation();
@@ -118,7 +121,11 @@ const FilterScreen = () => {
             style={{width: '80%', margin: 20, backgroundColor: 'white'}}
           />
           <TouchableOpacity onPress={() => toggleModal()}>
-            <Icon name="filter" size={32} color="#000" />
+            {Platform.OS === 'ios' ? (
+              <Image source={FilterIcon} style={{height: 20, width: 20}} />
+            ) : (
+              <Icon name="filter" size={32} color="#000" />
+            )}
           </TouchableOpacity>
         </View>
         <View style={{margin: 15, height: '85%'}}>

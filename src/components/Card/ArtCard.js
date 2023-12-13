@@ -4,9 +4,12 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import React, {useState} from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
+import unlike from '../../assets/Images/unlike.png';
+import like from '../../assets/Images/like.png';
 
 const ArtCard = ({item, onClick, favorite}) => {
   const [loading, setLoading] = useState(true);
@@ -26,7 +29,17 @@ const ArtCard = ({item, onClick, favorite}) => {
       ) : null}
       <TouchableOpacity style={{...styles.likeBtn}} onPress={favorite}>
         {!item?.likeFlag ? (
-          <Icon name="heart-circle" size={32} color="rgba(255, 255, 255, .6)" />
+          Platform.OS === 'ios' ? (
+            <Image source={unlike} style={{height: 20, width: 20}} />
+          ) : (
+            <Icon
+              name="heart-circle"
+              size={32}
+              color="rgba(255, 255, 255, .6)"
+            />
+          )
+        ) : Platform.OS === 'ios' ? (
+          <Image source={like} style={{height: 20, width: 20}} />
         ) : (
           <Icon name="heart-circle" size={32} color="#ED2939" />
         )}
