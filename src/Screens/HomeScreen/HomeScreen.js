@@ -1,29 +1,45 @@
-import {StyleSheet, View, SafeAreaView, FlatList} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import {
+  StyleSheet,
+  View,
+  SafeAreaView,
+  FlatList,
+  RefreshControl,
+} from 'react-native';
+import React, {useCallback, useEffect, useState} from 'react';
 import ArtCard from '../../components/Card/ArtCard';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import FlatListLoader from '../../components/Loaders/FlatListLoader';
 import useApi from '../../Hooks/useGetApi';
 import endpoints from '../../Services/endpoints';
 import {storeArtData} from '../../DataBase/storeArtData';
-import {setupDatabase} from '../../DataBase/db';
+// import {setupDatabase} from '../../DataBase/db';
 import {retrieveArtIds} from '../../DataBase/retrieveData';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  addFavList,
+  removeFromFavList,
+  updateFavList,
+} from '../../Redux/slice/FavListSlice';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
   const [likedIds, setLikedIds] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
   const {data: apiData, loading, error, callApi} = useApi();
+  const favoriteData = useSelector(state => state?.Favorites?.favList);
 
   useEffect(() => {
+    favListUpdates();
     callApi(endpoints.GET_ALL_ART_API, {p: page});
   }, []);
 
   const updatedList = result => {
     const updatedArr = result.map(item => ({
       ...item,
-      likeFlag: likedIds.includes(item?.objectNumber),
+      likeFlag: favoriteData.includes(item?.objectNumber),
     }));
     return updatedArr;
   };
@@ -38,15 +54,20 @@ const HomeScreen = () => {
     callApi(endpoints.GET_ALL_ART_API, {p: page});
   };
 
-  //move to app
-  useEffect(() => {
-    setupDatabase();
-  }, []);
-
-  useEffect(() => {
+  const favListUpdates = () => {
     retrieveArtIds(val => {
       setLikedIds(val);
+      dispatch(updateFavList(val));
     });
+  };
+
+  //move to app
+  // useEffect(() => {
+  //   setupDatabase();
+  // }, []);
+
+  useEffect(() => {
+    // favListUpdates();
     fetchDataFromApi();
   }, [page]);
 
@@ -55,7 +76,9 @@ const HomeScreen = () => {
   };
 
   const loadMoreData = () => {
-    setPage(page + 1);
+    if (!loading && !refreshing) {
+      setPage(prevPage => prevPage + 1);
+    }
   };
 
   const favorite = (detailsId, index) => {
@@ -69,7 +92,26 @@ const HomeScreen = () => {
       return item;
     });
     setData(updatedArr);
+    if (detailsId?.likeFlag) {
+      dispatch(removeFromFavList(detailsId?.objectNumber));
+    } else {
+      dispatch(addFavList(detailsId?.objectNumber));
+    }
     storeArtData(detailsId?.objectNumber, updatedArr[index]);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      // favListUpdates();
+      handleRefresh();
+    }, []),
+  );
+
+  const handleRefresh = () => {
+    setData([]);
+    // callApi(endpoints.GET_ALL_ART_API, {p: 1});
+    setPage(1);
+    setRefreshing(false);
   };
 
   return (
@@ -89,6 +131,9 @@ const HomeScreen = () => {
           onEndReached={loadMoreData}
           onEndReachedThreshold={0.1}
           ListFooterComponent={() => <FlatListLoader loading={loading} />}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
         />
       </View>
     </SafeAreaView>

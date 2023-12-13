@@ -5,8 +5,11 @@ import ArtCard from '../../components/Card/ArtCard';
 import {useFocusEffect} from '@react-navigation/native';
 import {useNavigation} from '@react-navigation/native';
 import {storeArtData} from '../../DataBase/storeArtData';
+import {removeFromFavList} from '../../Redux/slice/FavListSlice';
+import {useDispatch} from 'react-redux';
 
 const FavoriteScreen = () => {
+  const dispatch = useDispatch();
   const navigation = useNavigation();
   const [data, setData] = useState([]);
   const [callBackUpdate, setCallbackUpdate] = useState(false);
@@ -24,6 +27,7 @@ const FavoriteScreen = () => {
   };
 
   const favorite = (detailsId, index) => {
+    dispatch(removeFromFavList(detailsId?.objectNumber));
     storeArtData(detailsId?.objectNumber, data[index]);
     setCallbackUpdate(prevVal => !prevVal);
   };

@@ -14,34 +14,40 @@ import FlatListLoader from '../../components/Loaders/FlatListLoader';
 import ArtCard from '../../components/Card/ArtCard';
 import Icon from 'react-native-vector-icons/Ionicons';
 import FilterModal from '../../components/Modal/FilterModal';
-import {useSelector} from 'react-redux';
+import {useSelector, useDispatch} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
 import {storeArtData} from '../../DataBase/storeArtData';
 import {retrieveArtIds} from '../../DataBase/retrieveData';
 import {getAllCollections} from '../../Services/services';
 import FilterIcon from '../../assets/Images/filter.png';
+import _debounce from 'lodash/debounce';
+import {addFavList, removeFromFavList} from '../../Redux/slice/FavListSlice';
 
 const FilterScreen = () => {
+  const dispatch = useDispatch();
   const navigation = useNavigation();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [likedIds, setLikedIds] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [error, setError] = useState(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const selectedData = useSelector(state => state?.Filters?.filter);
+  const favoriteData = useSelector(state => state?.Favorites?.favList);
 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
 
-  const onChangeSearch = query => setSearchQuery(query);
+  const onChangeSearch = query => {
+    setSearchQuery(query);
+    debouncedSearch(query);
+  };
 
   const updateList = result => {
     const updatedArr = result.map(item => ({
       ...item,
-      likeFlag: likedIds.includes(item?.objectNumber),
+      likeFlag: favoriteData.includes(item?.objectNumber),
     }));
     return updatedArr;
   };
@@ -58,7 +64,7 @@ const FilterScreen = () => {
 
   const fetchSearchDataFromApi = async (params = {}) => {
     try {
-      const result = await getAllCollections({p: 0, q: searchQuery, ...params});
+      const result = await getAllCollections({p: 1, q: searchQuery, ...params});
       setLoading(false);
       setData(updateList(result));
       // eslint-disable-next-line no-catch-shadow
@@ -67,11 +73,11 @@ const FilterScreen = () => {
     }
   };
 
-  useEffect(() => {
-    if (searchQuery.length > 3) {
-      fetchSearchDataFromApi();
-    }
-  }, [searchQuery]);
+  // useEffect(() => {
+  //   if (searchQuery.length > 3) {
+  //     fetchSearchDataFromApi();
+  //   }
+  // }, [searchQuery]);
 
   useEffect(() => {
     if (Object.entries(selectedData).length > 0) {
@@ -80,11 +86,24 @@ const FilterScreen = () => {
   }, [selectedData]);
 
   useEffect(() => {
-    retrieveArtIds(val => {
-      setLikedIds(val);
-    });
+    // retrieveArtIds(val => {
+    //   setLikedIds(val);
+    // });
     fetchDataFromApi('page');
   }, [page]);
+
+  const debouncedSearch = _debounce(async searchQur => {
+    try {
+      setLoading(true);
+      if (searchQur.length > 3 || searchQur.length === 0) {
+        fetchSearchDataFromApi();
+      }
+    } catch (error) {
+      Alert.alert('Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  }, 500);
 
   const loadMoreData = () => {
     if (!loading) {
@@ -103,6 +122,11 @@ const FilterScreen = () => {
       return item;
     });
     setData(updatedArr);
+    if (detailsId?.likeFlag) {
+      dispatch(removeFromFavList(detailsId?.objectNumber));
+    } else {
+      dispatch(addFavList(detailsId?.objectNumber));
+    }
     storeArtData(detailsId?.objectNumber, updatedArr[index]);
   };
 
