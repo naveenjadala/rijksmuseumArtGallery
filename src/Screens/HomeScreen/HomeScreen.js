@@ -27,13 +27,17 @@ const HomeScreen = () => {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
   const [likedIds, setLikedIds] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);
+  const [refreshing, setRefreshing] = useState(true);
   const {data: apiData, loading, error, callApi} = useApi();
   const favoriteData = useSelector(state => state?.Favorites?.favList);
 
+  const fetchDataFromApi = async () => {
+    callApi(endpoints.GET_ALL_ART_API, {p: page});
+  };
+
   useEffect(() => {
     favListUpdates();
-    callApi(endpoints.GET_ALL_ART_API, {p: page});
+    fetchDataFromApi();
   }, []);
 
   const updatedList = result => {
@@ -46,13 +50,13 @@ const HomeScreen = () => {
 
   useEffect(() => {
     if (apiData) {
-      setData(prevData => [...prevData, ...updatedList(apiData)]);
+      if (page > 1) {
+        setData(prevData => [...prevData, ...updatedList(apiData)]);
+      } else {
+        setData(updatedList(apiData));
+      }
     }
   }, [apiData]);
-
-  const fetchDataFromApi = async () => {
-    callApi(endpoints.GET_ALL_ART_API, {p: page});
-  };
 
   const favListUpdates = () => {
     retrieveArtIds(val => {
@@ -69,7 +73,7 @@ const HomeScreen = () => {
   useEffect(() => {
     // favListUpdates();
     fetchDataFromApi();
-  }, [page]);
+  }, [page, refreshing]);
 
   const redirectToDetails = (detailsId, index) => {
     navigation.navigate('Details', {detailsId});
@@ -108,8 +112,7 @@ const HomeScreen = () => {
   );
 
   const handleRefresh = () => {
-    setData([]);
-    // callApi(endpoints.GET_ALL_ART_API, {p: 1});
+    callApi(endpoints.GET_ALL_ART_API, {p: 1});
     setPage(1);
     setRefreshing(false);
   };

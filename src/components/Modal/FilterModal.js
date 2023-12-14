@@ -17,15 +17,13 @@ const FilterModal = ({isModalVisible, toggleModal}) => {
         onRequestClose={toggleModal}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text>Filters</Text>
-            <Text>involvedMaker</Text>
+            <Text style={{...styles.filterTitle}}>Filters</Text>
+            <Text style={{...styles.filterSubTitle}}>InvolvedMaker:</Text>
             <RadioButton.Group
               onValueChange={newValue => setMakerValue(newValue)}
               value={maker}>
               {Makers.map((option, index) => (
-                <View
-                  key={index}
-                  style={{flexDirection: 'row', alignItems: 'center'}}>
+                <View key={index} style={{...styles.radioBtnView}}>
                   <RadioButton value={option} />
                   <Text>{option}</Text>
                 </View>
@@ -39,7 +37,14 @@ const FilterModal = ({isModalVisible, toggleModal}) => {
                   toggleModal();
                 }}
               />
-              <Button title="Close Modal" onPress={toggleModal} />
+              <Button
+                title="Clear Filters"
+                onPress={() => {
+                  setMakerValue('');
+                  dispatch(setFilter({involvedMaker: ''}));
+                  toggleModal();
+                }}
+              />
             </View>
           </View>
         </View>
@@ -73,5 +78,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     marginVertical: 20,
+  },
+  filterTitle: {
+    margin: 20,
+    fontSize: 18,
+    color: '#000',
+  },
+  filterSubTitle: {
+    marginHorizontal: 20,
+    fontSize: 16,
+    color: '#000',
+  },
+  radioBtnView: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
