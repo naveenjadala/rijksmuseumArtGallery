@@ -12,7 +12,7 @@ import FlatListLoader from '../../components/Loaders/FlatListLoader';
 import useApi from '../../Hooks/useGetApi';
 import endpoints from '../../Services/endpoints';
 import {storeArtData} from '../../DataBase/storeArtData';
-// import {setupDatabase} from '../../DataBase/db';
+import {setupDatabase} from '../../DataBase/db';
 import {retrieveArtIds} from '../../DataBase/retrieveData';
 import {useDispatch, useSelector} from 'react-redux';
 import {

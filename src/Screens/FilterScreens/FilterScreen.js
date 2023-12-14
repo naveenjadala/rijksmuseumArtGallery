@@ -58,6 +58,7 @@ const FilterScreen = () => {
       setLoading(false);
       setData(prevVal => [...prevVal, ...updateList(result)]);
     } catch (error) {
+      setLoading(false);
       Alert.alert('Something went wrong');
     }
   };
@@ -69,6 +70,7 @@ const FilterScreen = () => {
       setData(updateList(result));
       // eslint-disable-next-line no-catch-shadow
     } catch (error) {
+      setLoading(false);
       Alert.alert('Something went wrong');
     }
   };
