@@ -22,6 +22,7 @@ const TabNavigation = () => {
         component={HomeStackNav}
         name="HomeStack"
         options={{
+          unmountOnBlur: true,
           headerShown: false,
           tabBarLabel: 'Home',
           // eslint-disable-next-line react/no-unstable-nested-components
@@ -37,6 +38,7 @@ const TabNavigation = () => {
         component={FavoritesStackNav}
         name="FavoritesStack"
         options={{
+          unmountOnBlur: true,
           tabBarLabel: 'Favorites',
           // eslint-disable-next-line react/no-unstable-nested-components
           tabBarIcon: ({color, size}) =>
@@ -51,6 +53,7 @@ const TabNavigation = () => {
         component={FilterStackNav}
         name="FiltersStack"
         options={{
+          unmountOnBlur: true,
           tabBarLabel: 'Filters',
           // eslint-disable-next-line react/no-unstable-nested-components
           tabBarIcon: ({color, size}) =>
@@ -65,6 +68,7 @@ const TabNavigation = () => {
         component={ProfileScreen}
         name="Profile"
         options={{
+          unmountOnBlur: true,
           tabBarLabel: 'Profile',
           // eslint-disable-next-line react/no-unstable-nested-components
           tabBarIcon: ({color, size}) => (

@@ -1,13 +1,26 @@
-import {Button, Modal, StyleSheet, Text, View} from 'react-native';
+import {Modal, StyleSheet, Text, View} from 'react-native';
 import React from 'react';
 import {RadioButton} from 'react-native-paper';
 import {useDispatch} from 'react-redux';
 import {setFilter} from '../../Redux/slice/FilterSlice';
 import {Makers} from '../../assets/Constants';
+import FilterBtn from '../Buttons/FilterBtn';
 
-const FilterModal = ({isModalVisible, toggleModal}) => {
+const FilterModal = ({isModalVisible, toggleModal, selectedData}) => {
   const dispatch = useDispatch();
-  const [maker, setMakerValue] = React.useState('');
+  const [maker, setMakerValue] = React.useState(selectedData?.involvedMaker);
+
+  const saveFilter = () => {
+    dispatch(setFilter({involvedMaker: maker}));
+    toggleModal();
+  };
+
+  const clearFilter = () => {
+    setMakerValue('');
+    dispatch(setFilter({involvedMaker: ''}));
+    toggleModal();
+  };
+
   return (
     <View>
       <Modal
@@ -20,31 +33,24 @@ const FilterModal = ({isModalVisible, toggleModal}) => {
             <Text style={{...styles.filterTitle}}>Filters</Text>
             <Text style={{...styles.filterSubTitle}}>InvolvedMaker:</Text>
             <RadioButton.Group
-              onValueChange={newValue => setMakerValue(newValue)}
+              onValueChange={newValue => {
+                console.log(newValue, 'newValue');
+                setMakerValue(newValue);
+              }}
               value={maker}>
               {Makers.map((option, index) => (
                 <View key={index} style={{...styles.radioBtnView}}>
-                  <RadioButton value={option} />
+                  <RadioButton
+                    value={option}
+                    status={maker === option ? 'checked' : 'unchecked'}
+                  />
                   <Text>{option}</Text>
                 </View>
               ))}
             </RadioButton.Group>
             <View style={{...styles.modalBtnContainer}}>
-              <Button
-                title="save Modal"
-                onPress={() => {
-                  dispatch(setFilter({involvedMaker: maker}));
-                  toggleModal();
-                }}
-              />
-              <Button
-                title="Clear Filters"
-                onPress={() => {
-                  setMakerValue('');
-                  dispatch(setFilter({involvedMaker: ''}));
-                  toggleModal();
-                }}
-              />
+              <FilterBtn title="save filter" onClick={saveFilter} />
+              <FilterBtn title="Clear filters" onClick={clearFilter} />
             </View>
           </View>
         </View>

@@ -1,41 +1,42 @@
 import {
-  Alert,
   FlatList,
-  Image,
-  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
   TouchableWithoutFeedback,
   Keyboard,
+  RefreshControl,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {Searchbar} from 'react-native-paper';
 import FlatListLoader from '../../components/Loaders/FlatListLoader';
 import ArtCard from '../../components/Card/ArtCard';
-import Icon from 'react-native-vector-icons/Ionicons';
 import FilterModal from '../../components/Modal/FilterModal';
 import {useSelector, useDispatch} from 'react-redux';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {storeArtData} from '../../DataBase/storeArtData';
 import {retrieveArtIds} from '../../DataBase/retrieveData';
-import {getAllCollections} from '../../Services/services';
-import FilterIcon from '../../assets/Images/filter.png';
 import _debounce from 'lodash/debounce';
-import {addFavList, removeFromFavList, updateFavList} from '../../Redux/slice/FavListSlice';
+import {
+  addFavList,
+  removeFromFavList,
+  updateFavList,
+} from '../../Redux/slice/FavListSlice';
+import endpoints from '../../Services/endpoints';
+import useApi from '../../Hooks/useGetApi';
+import FilterIconComponent from '../../components/FilterIconComponent';
 
 const FilterScreen = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [likedIds, setLikedIds] = useState([]);
   const [isSearchBarFocused, setSearchBarFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(true);
+  const {data: apiData, loading: loadApi, error, callApi} = useApi();
   const selectedData = useSelector(state => state?.Filters?.filter);
   const favoriteData = useSelector(state => state?.Favorites?.favList);
 
@@ -45,7 +46,7 @@ const FilterScreen = () => {
 
   const favListUpdates = () => {
     retrieveArtIds(val => {
-      setLikedIds(val);
+      // setLikedIds(val);
       dispatch(updateFavList(val));
     });
   };
@@ -55,7 +56,7 @@ const FilterScreen = () => {
   };
 
   const updateList = result => {
-    const updatedArr = result.map(item => ({
+    const updatedArr = result?.map(item => ({
       ...item,
       likeFlag: favoriteData.includes(item?.objectNumber),
     }));
@@ -63,24 +64,27 @@ const FilterScreen = () => {
   };
 
   const fetchDataFromApi = async () => {
-    setLoading(true);
-    try {
-      const result = await getAllCollections({
+    callApi(
+      endpoints.GET_ALL_ART_API,
+      {
         p: page,
         q: searchQuery,
         ...selectedData,
-      });
-      setLoading(false);
-      if (page > 1) {
-        setData(prevVal => [...prevVal, ...updateList(result)]);
-      } else {
-        setData(updateList(result));
-      }
-    } catch (error) {
-      setLoading(false);
-      Alert.alert('Something went wrong');
-    }
+      },
+      '',
+    );
   };
+
+  useEffect(() => {
+    favListUpdates();
+    if (apiData) {
+      if (page > 1) {
+        setData(prevData => [...prevData, ...updateList(apiData?.artObjects)]);
+      } else {
+        setData(updateList(apiData?.artObjects));
+      }
+    }
+  }, [apiData]);
 
   useEffect(() => {
     if (Object.entries(selectedData).length > 0) {
@@ -93,25 +97,19 @@ const FilterScreen = () => {
   }, [selectedData]);
 
   useEffect(() => {
-    favListUpdates();
-    fetchDataFromApi();
+    if (page > 1) {
+      fetchDataFromApi();
+    }
   }, [page]);
 
+  // debounced search removing unwanted input noise
   const debouncedSearch = _debounce(async searchQur => {
-    try {
-      setLoading(true);
-      if (searchQur.length > 3 || searchQur.length === 0) {
-        if (page === 1) {
-          fetchDataFromApi();
-        } else {
-          setPage(1);
-        }
+    if (searchQur.length > 3 || searchQur.length === 0) {
+      if (page === 1) {
+        fetchDataFromApi();
+      } else {
+        setPage(1);
       }
-    } catch (error) {
-      setLoading(false);
-      Alert.alert('Something went wrong');
-    } finally {
-      setLoading(false);
     }
   }, 500);
 
@@ -120,7 +118,7 @@ const FilterScreen = () => {
   }, [searchQuery]);
 
   const loadMoreData = () => {
-    if (!loading) {
+    if (!loadApi && !refreshing) {
       setPage(prevPage => prevPage + 1);
     }
   };
@@ -150,14 +148,15 @@ const FilterScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
-      if (page > 1) {
-        setPage(1);
-      } else {
-        fetchDataFromApi();
-      }
-      // setPage(1);
+      handleRefresh();
     }, []),
   );
+
+  const handleRefresh = () => {
+    fetchDataFromApi();
+    setPage(1);
+    setRefreshing(false);
+  };
 
   return (
     <SafeAreaView style={{flex: 1}}>
@@ -174,13 +173,10 @@ const FilterScreen = () => {
               onFocus={() => setSearchBarFocused(true)}
               onBlur={() => setSearchBarFocused(false)}
             />
-            <TouchableOpacity onPress={() => toggleModal()}>
-              {Platform.OS === 'ios' ? (
-                <Image source={FilterIcon} style={{...styles.img}} />
-              ) : (
-                <Icon name="filter" size={32} color="#000" />
-              )}
-            </TouchableOpacity>
+            <FilterIconComponent
+              toggleModal={toggleModal}
+              selectedData={selectedData || ''}
+            />
           </View>
           <View style={{...styles.listContainer}}>
             <FlatList
@@ -198,17 +194,24 @@ const FilterScreen = () => {
               onEndReached={!isSearchBarFocused ? loadMoreData : null}
               onEndReachedThreshold={0.1}
               // eslint-disable-next-line react/no-unstable-nested-components
-              ListFooterComponent={() => <FlatListLoader loading={loading} />}
+              ListFooterComponent={() => <FlatListLoader loading={loadApi} />}
               ListEmptyComponent={
                 <View style={{...styles.emptyTxt}}>
                   <Text>No data available</Text>
                 </View>
+              }
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                />
               }
             />
           </View>
           <FilterModal
             toggleModal={() => toggleModal()}
             isModalVisible={isModalVisible}
+            selectedData={selectedData || ''}
           />
         </>
       </TouchableWithoutFeedback>

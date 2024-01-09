@@ -12,7 +12,6 @@ import FlatListLoader from '../../components/Loaders/FlatListLoader';
 import useApi from '../../Hooks/useGetApi';
 import endpoints from '../../Services/endpoints';
 import {storeArtData} from '../../DataBase/storeArtData';
-import {setupDatabase} from '../../DataBase/db';
 import {retrieveArtIds} from '../../DataBase/retrieveData';
 import {useDispatch, useSelector} from 'react-redux';
 import {
@@ -26,22 +25,22 @@ const HomeScreen = () => {
   const dispatch = useDispatch();
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
-  const [likedIds, setLikedIds] = useState([]);
   const [refreshing, setRefreshing] = useState(true);
   const {data: apiData, loading, error, callApi} = useApi();
   const favoriteData = useSelector(state => state?.Favorites?.favList);
 
-  const fetchDataFromApi = async () => {
-    callApi(endpoints.GET_ALL_ART_API, {p: page});
-  };
+  useEffect(() => {
+    callApi(endpoints.GET_ALL_ART_API, {p: page}, '');
+  }, [page, refreshing]);
 
   useEffect(() => {
-    favListUpdates();
-    fetchDataFromApi();
-  }, []);
+    retrieveArtIds(val => {
+      dispatch(updateFavList(val));
+    });
+  }, [dispatch]);
 
   const updatedList = result => {
-    const updatedArr = result.map(item => ({
+    const updatedArr = result?.map(item => ({
       ...item,
       likeFlag: favoriteData.includes(item?.objectNumber),
     }));
@@ -51,29 +50,12 @@ const HomeScreen = () => {
   useEffect(() => {
     if (apiData) {
       if (page > 1) {
-        setData(prevData => [...prevData, ...updatedList(apiData)]);
+        setData(prevData => [...prevData, ...updatedList(apiData?.artObjects)]);
       } else {
-        setData(updatedList(apiData));
+        setData(updatedList(apiData?.artObjects));
       }
     }
   }, [apiData]);
-
-  const favListUpdates = () => {
-    retrieveArtIds(val => {
-      setLikedIds(val);
-      dispatch(updateFavList(val));
-    });
-  };
-
-  //move to app
-  // useEffect(() => {
-  //   setupDatabase();
-  // }, []);
-
-  useEffect(() => {
-    // favListUpdates();
-    fetchDataFromApi();
-  }, [page, refreshing]);
 
   const redirectToDetails = (detailsId, index) => {
     navigation.navigate('Details', {detailsId});
@@ -106,8 +88,9 @@ const HomeScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
-      // favListUpdates();
+      const abortController = new AbortController();
       handleRefresh();
+      return () => abortController.abort();
     }, []),
   );
 

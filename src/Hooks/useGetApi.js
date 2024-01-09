@@ -7,6 +7,7 @@ const useApi = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [apiParams, setApiParams] = useState({});
+  const [pathParams, setPathParams] = useState('');
 
   const API_URL = 'https://www.rijksmuseum.nl/api/';
 
@@ -22,13 +23,13 @@ const useApi = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiClient.get(endPoint, {
+      const response = await apiClient.get(`${endPoint}/${pathParams}`, {
         params: {
           key: 'GMZbiDud',
           ...apiParams,
         },
       });
-      setData(response?.data?.artObjects);
+      setData(response?.data);
       // eslint-disable-next-line no-catch-shadow
     } catch (error) {
       setError(error);
@@ -39,11 +40,12 @@ const useApi = () => {
 
   useEffect(() => {
     getApiData();
-  }, [endPoint, apiParams]);
+  }, [endPoint, apiParams, pathParams]);
 
-  const callApi = (newUrl, params = {}) => {
+  const callApi = (newUrl, params = {}, newPathParams = '') => {
     setApiParams(params);
     setEndPoint(newUrl);
+    setPathParams(newPathParams);
   };
 
   return {data, loading, error, callApi};
