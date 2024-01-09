@@ -19,9 +19,9 @@ Features
 
 (Things missed):
 Due to time constraints,
-.comprehensive test cases have not been implemented. Contributions in this area are highly encouraged to ensure the app's robustness.
-.UI Enhancement. Contributions to improve the user interface, responsiveness, and overall aesthetics.
-.Api rendering .
+.comprehensive test cases(Unit test) have not been implemented.
+.UI Enhancement.
+.Native modules
 
 # APK
 
